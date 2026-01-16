@@ -7,34 +7,38 @@ app.use(express.json());
 
 let avaliacoes = [];
 
-// Listar avaliações
+app.post("/avaliacoes", (req, res) => {
+  const { aluno, disciplina, nota } = req.body;
+
+  if (!aluno || !disciplina || nota === undefined) {
+    return res.status(400).json({ error: "Dados inválidos" });
+  }
+
+  avaliacoes.push({
+  aluno,
+  disciplina,
+  nota: Number(nota),
+});
+
+  res.status(201).json({ message: "Avaliação cadastrada" });
+});
+
 app.get("/avaliacoes", (req, res) => {
   res.json(avaliacoes);
 });
 
-// Criar avaliação
-app.post("/avaliacoes", (req, res) => {
-  const { nome, nota, comentario } = req.body;
-
-  if (!nome || !nota) {
-    return res.status(400).json({ erro: "Nome e nota são obrigatórios" });
+app.get("/avaliacoes/media", (req, res) => {
+  if (avaliacoes.length === 0) {
+    return res.json({ media: 0 });
   }
 
-  const novaAvaliacao = {
-    id: avaliacoes.length + 1,
-    nome,
-    nota,
-    comentario
-  };
+  const soma = avaliacoes.reduce(
+    (total, avaliacao) => total + avaliacao.nota,
+    0
+  );
 
-  avaliacoes.push(novaAvaliacao);
-  res.status(201).json(novaAvaliacao);
-});
+  const media = soma / avaliacoes.length;
 
-// Média das notas
-app.get("/avaliacoes/media", (req, res) => {
-  const soma = avaliacoes.reduce((total, a) => total + a.nota, 0);
-  const media = avaliacoes.length ? soma / avaliacoes.length : 0;
   res.json({ media });
 });
 
