@@ -9,7 +9,7 @@ let avaliacoes = [];
 
 //Cadastrar avaliações
 app.post("/avaliacoes", (req, res) => {
-  const { aluno, disciplina, nota } = req.body;
+  const { aluno, disciplina, nota,comentario } = req.body;
 
   if (!aluno || !disciplina || nota === undefined) {
     return res.status(400).json({ error: "Dados inválidos" });
@@ -19,6 +19,7 @@ app.post("/avaliacoes", (req, res) => {
   aluno,
   disciplina,
   nota: Number(nota),
+  comentario
 });
 
  res.status(201).json({
@@ -68,6 +69,13 @@ app.get("/avaliacoes/media-por-disciplina", (req, res) => {
   }));
 
   res.json(medias);
+});
+app.get("/avaliacoes/ranking", (req, res) => {
+  const ranking = [...avaliacoes]
+    .sort((a, b) => b.nota - a.nota)
+    .slice(0, 5);
+
+  res.json(ranking);
 });
 
 //Excluir avaliação (por id)
