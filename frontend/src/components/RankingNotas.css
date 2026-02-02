@@ -1,0 +1,45 @@
+.ranking {
+  padding: 10px;
+}
+
+.ranking h2 {
+  text-align: center;
+  margin-bottom: 15px;
+  color: #0d47a1;
+}
+
+.ranking-tabela {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ranking-tabela th {
+  background: #e3f2fd;
+  padding: 10px;
+  font-weight: bold;
+}
+
+.ranking-tabela td {
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.ranking-tabela tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+
+.posicao {
+  font-weight: bold;
+}
+
+.nome {
+  font-weight: 500;
+}
+
+.nota {
+  font-weight: bold;
+  text-align: right;
+  color: #2e7d32;
+}
