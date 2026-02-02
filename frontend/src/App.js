@@ -1,65 +1,76 @@
-import { useEffect, useState } from "react";
-import { api } from "./services/api";
-import FormularioAvaliacao from "./components/FormularioAvaliacao";
-import ListaAvaliacoes from "./components/ListaAvaliacoes";
-import MediaPorDisciplina from "./components/MediaPorDisciplina";
-import RankingNotas from "./components/RankingNotas";
-import "./App.css";
+import React, { useState, useEffect } from "react"; // Ajustado: adicionada a vírgula
+import axios from "axios";
 
 function App() {
-  const [avaliacoes, setAvaliacoes] = useState([]);
-  const [media, setMedia] = useState(0);
-  const [atualizar, setAtualizar] = useState(0);
+    const [avaliacoes, setAvaliacoes] = useState([]);
+    const [ranking, setRanking] = useState([]);
+    const [mediaGeral, setMediaGeral] = useState(0); // Nome definido aqui
+    const [form, setForm] = useState({ aluno: '', disciplina: '', nota: '', comentario: '' });
+    
+    const API_URL = "http://localhost:3001/avaliacoes";
 
-  async function carregar() {
-    const res = await api.get("/avaliacoes");
-    const mediaRes = await api.get("/avaliacoes/media");
 
-    setAvaliacoes(res.data);
-    setMedia(mediaRes.data.media);
-    setAtualizar((prev) => prev + 1);
-  }
+    const fetchData = async () => {
+        try {
+            const resLista = await axios.get(API_URL);
+            const resMedia = await axios.get(`${API_URL}/media`);
+            const resRanking = await axios.get(`${API_URL}/ranking`);
+            setAvaliacoes(resLista.data);
+            setMediaGeral(resMedia.data.media); // Atualiza mediaGeral
+            setRanking(resRanking.data);
+        } catch (err) {
+            console.error("Erro ao buscar dados:", err);
+        }
+    };
 
-  useEffect(() => {
-    carregar();
-  }, []);
+    useEffect(() => { fetchData(); }, []);
 
-  return (
-    <div className="container">
-      <div className="card">
-        <h1>Sistema de Avaliação</h1>
-        <h3
-          className={`media ${
-            media >= 7 ? "boa" : media >= 5 ? "regular" : "ruim"
-          }`}
-        >
-          Média Geral: {media.toFixed(1)}
-        </h3>
-      </div>
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            await axios.post(API_URL, form);
+            setForm({ aluno: '', disciplina: '', nota: '', comentario: '' });
+            fetchData();
+        } catch (err) {
+            console.error("Erro ao enviar:", err);
+        }
+    };
 
-      <div className="card">
-        <h2>Cadastro de Avaliação</h2>
-        <FormularioAvaliacao atualizar={carregar} />
-      </div>
+    return (
+        <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
+            <h1>Sistema de Avaliações</h1>
+            
+            <div style={{ background: '#f0f0f0', padding: '10px', borderRadius: '8px' }}>
+                {/* Ajustado para usar mediaGeral */}
+                <h3>Média Geral: {Number(mediaGeral).toFixed(1)}</h3>
+            </div>
 
-      <div className="card">
-        <h2>Lista de Avaliações</h2>
-        <ListaAvaliacoes
-          avaliacoes={avaliacoes}
-          atualizar={carregar}
-        />
-      </div>
+            <form onSubmit={handleSubmit} style={{ margin: '20px 0' }}>
+                <input placeholder="Aluno" value={form.aluno} onChange={e => setForm({ ...form, aluno: e.target.value })} required />
+                <input placeholder="Disciplina" value={form.disciplina} onChange={e => setForm({ ...form, disciplina: e.target.value })} required />
+                <input type="number" placeholder="Nota (0-10)" value={form.nota} onChange={e => setForm({ ...form, nota: e.target.value })} required />
+                <button type="submit">Avaliar</button>
+            </form>
 
-      <div className="card">
-        <h2>Média por Disciplina</h2>
-        <MediaPorDisciplina atualizarTrigger={atualizar} />
-      </div>
+            <div style={{ display: 'flex', gap: '40px' }}>
+                <div>
+                    <h2>Últimas Avaliações</h2>
+                    {avaliacoes.length > 0 ? avaliacoes.map(a => (
+                        <div key={a.id} style={{ borderBottom: '1px solid #ccc' }}>
+                            <p><strong>{a.aluno}</strong> em {a.disciplina}: {a.nota}</p>
+                        </div>
+                    )) : <p>Nenhuma avaliação encontrada.</p>}
+                </div>
 
-      <div className="card">
-        <RankingNotas avaliacoes={avaliacoes}/>
-      </div>
-    </div>
-  );
+                <div style={{ background: '#fff9e6', padding: '15px' }}>
+                    <h2>🏆 Top 5 Ranking</h2>
+                    {ranking.map((r, index) => (
+                        <p key={r.id}>{index + 1}º - {r.aluno} ({r.nota})</p>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default App;
