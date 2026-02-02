@@ -22,7 +22,7 @@ app.post("/avaliacoes", (req, res) => {
   comentario
 });
 
- res.status(201).json({
+  res.status(201).json({
   id: Date.now(),
   aluno,
   disciplina,
