@@ -7,19 +7,26 @@ function FormularioAvaliacao({ atualizar }) {
   const [nota, setNota] = useState("");
   const [disciplina, setDisciplina] = useState("");
   const [comentario, setComentario] = useState("");
+
   async function handleSubmit(event) {
     event.preventDefault();
+
+    const notaNumerica = Number(nota);
+
+if (notaNumerica < 0 || notaNumerica > 10) {
+  alert("A nota deve estar entre 0 e 10");
+  return;
+}
 
     try {
       await api.post("/avaliacoes", {
         aluno,
-        nota: Number(nota),
         disciplina,
+        nota: notaNumerica,
         comentario,
       });
 
-      atualizar(); // atualiza lista e média
-
+      atualizar();
       alert("Avaliação cadastrada com sucesso!");
 
       setAluno("");
@@ -27,14 +34,14 @@ function FormularioAvaliacao({ atualizar }) {
       setDisciplina("");
       setComentario("");
     } catch (error) {
-      alert("Erro ao cadastrar avaliação");
+      alert(error.response?.data?.error || "Erro ao cadastrar avaliação");
     }
   }
 
   return (
     <div className="formulario">
-
       <form onSubmit={handleSubmit}>
+
         <div>
           <label>Aluno:</label>
           <input
@@ -47,35 +54,28 @@ function FormularioAvaliacao({ atualizar }) {
 
         <div>
           <label>Disciplina:</label>
-          <input
-            type="text"
-            value={disciplina}
-            onChange={(e) => setDisciplina(e.target.value)}
-            required
-          />
+<input
+  type="range"
+  min="0"
+  max="10"
+  step="0.1"
+  value={nota}
+  onChange={(e) => setNota(e.target.value)}
+/>
+<span>{nota}</span>
+
         </div>
 
         <div>
-          <label>Nota:</label>
-          <input
-            type="number"
-            value={nota}
-            onChange={(e) => setNota(e.target.value)}
-            min="0"
-            max="10"
-            required
+          <label>Comentário:</label>
+          <textarea
+            value={comentario}
+            onChange={(e) => setComentario(e.target.value)}
+            rows="4"
+            className="campo-comentario"
+            placeholder="Observações sobre a avaliação..."
           />
         </div>
-<div>
-  <label>Comentário:</label>
-  <textarea
-    value={comentario}
-    onChange={(e) => setComentario(e.target.value)}
-    rows="4"
-    className="campo-comentario"
-    placeholder="Observações sobre a avaliação..."
-  />
-</div>
 
         <button type="submit">Salvar</button>
       </form>

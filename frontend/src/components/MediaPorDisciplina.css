@@ -1,4 +1,11 @@
 .media-disciplina {
+  background-color: #f0f0f0;
+  padding: 15px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.media-disciplina {
   margin-top: 30px;
 }
 

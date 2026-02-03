@@ -1,5 +1,12 @@
 .ranking {
-  padding: 10px;
+  background-color: #fff8dc;
+  padding: 15px;
+  border-radius: 8px;
+  width: fit-content;
+}
+
+.ranking li {
+  margin: 5px 0;
 }
 
 .ranking h2 {

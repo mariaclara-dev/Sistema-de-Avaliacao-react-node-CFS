@@ -1,95 +1,139 @@
 const express = require("express");
 const cors = require("cors");
+const { PrismaClient } = require("@prisma/client");
 
 const app = express();
+const prisma = new PrismaClient();
+
 app.use(cors());
 app.use(express.json());
 
-let avaliacoes = [];
-
-//Cadastrar avaliações
-app.post("/avaliacoes", (req, res) => {
-  const { aluno, disciplina, nota,comentario } = req.body;
-
-  if (!aluno || !disciplina || nota === undefined) {
-    return res.status(400).json({ error: "Dados inválidos" });
-  }
-  avaliacoes.push({
-  id:Date.now(),
-  aluno,
-  disciplina,
-  nota: Number(nota),
-  comentario
+/* =========================
+   ROTA RAIZ (teste)
+========================= */
+app.get("/", (req, res) => {
+  res.send("API Sistema de Avaliações rodando 🚀");
 });
 
-  res.status(201).json({
-  id: Date.now(),
-  aluno,
-  disciplina,
-  nota: Number(nota),
-});
+/* =========================
+   CRIAR AVALIAÇÃO
+========================= */
+app.post("/avaliacoes", async (req, res) => {
+  try {
+    const { aluno, disciplina, nota, comentario } = req.body;
 
-});
-
-//Listar avaliações
-app.get("/avaliacoes", (req, res) => {
-  res.json(avaliacoes);
-});
-//Média geral 
-app.get("/avaliacoes/media", (req, res) => {
-  if (avaliacoes.length === 0) {
-    return res.json({ media: 0 });
-  }
-
-  const soma = avaliacoes.reduce(
-    (total, avaliacao) => total + avaliacao.nota,
-    0
-  );
-
-  const media = soma / avaliacoes.length;
-  res.json({ media });
-});
-
-//Média por disciplina 
-app.get("/avaliacoes/media-por-disciplina", (req, res) => {
-  const resultado = {};
-
-  avaliacoes.forEach((a) => {
-    if (!resultado[a.disciplina]) {
-      resultado[a.disciplina] = { soma: 0, total: 0 };
+    // 🔒 Validação obrigatória
+    if (!aluno || !disciplina || nota === undefined) {
+      return res.status(400).json({
+        error: "Aluno, disciplina e nota são obrigatórios"
+      });
     }
 
-    resultado[a.disciplina].soma += a.nota;
-    resultado[a.disciplina].total += 1;
+    const notaNumerica = Number(nota);
+
+    // 🔒 BLOQUEIO DEFINITIVO
+    if (
+      Number.isNaN(notaNumerica) ||
+      notaNumerica < 0 ||
+      notaNumerica > 10
+    ) {
+      return res.status(400).json({
+        error: "A nota deve ser um número entre 0 e 10"
+      });
+    }
+
+    const avaliacao = await prisma.avaliacao.create({
+      data: {
+        aluno,
+        disciplina,
+        nota: notaNumerica,
+        comentario
+      }
+    });
+
+    res.status(201).json(avaliacao);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro ao cadastrar avaliação" });
+  }
+});
+
+/* =========================
+   LISTAR AVALIAÇÕES
+========================= */
+app.get("/avaliacoes", async (req, res) => {
+  const avaliacoes = await prisma.avaliacao.findMany({
+    orderBy: { createdAt: "desc" }
   });
 
-  const medias = Object.keys(resultado).map((disciplina) => ({
-    disciplina,
-    media: resultado[disciplina].soma / resultado[disciplina].total,
-  }));
-
-  res.json(medias);
+  res.json(avaliacoes);
 });
-app.get("/avaliacoes/ranking", (req, res) => {
-  const ranking = [...avaliacoes]
-    .sort((a, b) => b.nota - a.nota)
-    .slice(0, 5);
+
+/* =========================
+   MÉDIA GERAL
+========================= */
+app.get("/avaliacoes/media", async (req, res) => {
+  const result = await prisma.avaliacao.aggregate({
+    _avg: { nota: true }
+  });
+
+  res.json({
+    media: result._avg.nota ? Number(result._avg.nota.toFixed(2)) : 0
+  });
+});
+
+/* =========================
+   MÉDIA POR DISCIPLINA
+========================= */
+app.get("/avaliacoes/media-por-disciplina", async (req, res) => {
+  const medias = await prisma.avaliacao.groupBy({
+    by: ["disciplina"],
+    _avg: { nota: true }
+  });
+
+  res.json(
+    medias.map(item => ({
+      disciplina: item.disciplina,
+      media: Number(item._avg.nota.toFixed(2))
+    }))
+  );
+});
+
+/* =========================
+   RANKING TOP 5
+========================= */
+app.get("/avaliacoes/ranking", async (req, res) => {
+  const ranking = await prisma.avaliacao.findMany({
+    orderBy: { nota: "desc" },
+    take: 5
+  });
 
   res.json(ranking);
 });
 
-//Excluir avaliação (por id)
-app.delete("/avaliacoes/:id", (req, res) => {
+/* =========================
+   EXCLUIR AVALIAÇÃO
+========================= */
+app.delete("/avaliacoes/:id", async (req, res) => {
   const id = Number(req.params.id);
 
-  avaliacoes = avaliacoes.filter((a) => a.id !== id);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
 
-  res.json({ message: "Avaliação removida" });
+  try {
+    await prisma.avaliacao.delete({
+      where: { id }
+    });
+
+    res.json({ message: "Avaliação removida com sucesso" });
+  } catch {
+    res.status(404).json({ error: "Avaliação não encontrada" });
+  }
 });
 
-
-//Servidor 
+/* =========================
+   SERVIDOR
+========================= */
 app.listen(3001, () => {
-  console.log("Servidor rodando na porta 3001");
-});
-
+  console.log("Servidor rodando na porta 3001");});
