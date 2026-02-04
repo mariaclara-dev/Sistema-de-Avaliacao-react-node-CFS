@@ -54,4 +54,10 @@
 .btn-excluir:hover {
   background: #dc2626;
 }
-
+.comentario
+ {
+  max-width: 250px;
+  word-wrap: break-word;
+  font-size: 14px;
+  color: #333;
+}

@@ -1,4 +1,3 @@
-import Estrelas from "./Estrelas";
 import { api } from "../services/api";
 import "./ListaAvaliacoes.css";
 
@@ -24,31 +23,36 @@ function ListaAvaliacoes({ avaliacoes, atualizar }) {
               <th>Aluno</th>
               <th>Disciplina</th>
               <th>Nota</th>
+              <th>Comentário</th>
               <th>Ações</th>
             </tr>
           </thead>
 
-<tbody>
-  {avaliacoes.map((a) => (
-    <tr key={a.id}>
-      <td>{a.aluno}</td>
-      <td>{a.disciplina}</td>
+          <tbody>
+            {avaliacoes.map((a) => (
+              <tr key={a.id}>
+                <td>{a.aluno}</td>
+                <td>{a.disciplina}</td>
 
-      <td className={a.nota >= 7 ? "nota-boa" : "nota-ruim"}>
-        {a.nota}
-      </td>
+                <td className={a.nota >= 7 ? "nota-boa" : "nota-ruim"}>
+                  {a.nota}
+                </td>
 
-      <td>
-        <button
-          className="btn-excluir"
-          onClick={() => excluir(a.id)}
-        >
-          Excluir
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                <td className="comentario">
+                  {a.comentario ? a.comentario : "—"}
+                </td>
+
+                <td>
+                  <button
+                    className="btn-excluir"
+                    onClick={() => excluir(a.id)}
+                  >
+                    Excluir
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       )}
     </div>

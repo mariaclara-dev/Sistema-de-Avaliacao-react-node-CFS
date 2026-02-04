@@ -45,12 +45,45 @@ function App() {
                 <h3>Média Geral: {Number(mediaGeral).toFixed(1)}</h3>
             </div>
 
-            <form onSubmit={handleSubmit} style={{ margin: '20px 0' }}>
-                <input placeholder="Aluno" value={form.aluno} onChange={e => setForm({ ...form, aluno: e.target.value })} required />
-                <input placeholder="Disciplina" value={form.disciplina} onChange={e => setForm({ ...form, disciplina: e.target.value })} required />
-                <input type="number" placeholder="Nota (0-10)" value={form.nota} onChange={e => setForm({ ...form, nota: e.target.value })} required />
-                <button type="submit">Avaliar</button>
-            </form>
+            <form onSubmit={handleSubmit} style={{ margin: "20px 0" }}>
+  <input
+    placeholder="Aluno"
+    value={form.aluno}
+    onChange={e => setForm({ ...form, aluno: e.target.value })}
+    required
+  />
+
+  <input
+    placeholder="Disciplina"
+    value={form.disciplina}
+    onChange={e => setForm({ ...form, disciplina: e.target.value })}
+    required
+  />
+
+  <input
+    type="number"
+    min="0"
+    max="10"
+    step="0.1"
+    placeholder="Nota (0–10)"
+    value={form.nota}
+    onChange={e => setForm({ ...form, nota: e.target.value })}
+    required
+  />
+
+  {/* CAMPO DE COMENTÁRIO */}
+  <textarea
+    placeholder="Comentário sobre a avaliação"
+    value={form.comentario}
+    onChange={e => setForm({ ...form, comentario: e.target.value })}
+    rows={3}
+    style={{ width:"40%",height:"30px", resize:"none" }}
+  />
+
+  <button type="submit" style={{ marginTop: "10px" }}>
+    Avaliar
+  </button>
+</form>
 
             <div style={{ display: 'flex', gap: '40px' }}>
                 <div>
